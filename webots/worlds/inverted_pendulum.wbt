@@ -1,0 +1,186 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/Floor.proto"
+
+WorldInfo {
+  basicTimeStep 10
+}
+Viewpoint {
+  orientation -0.11480870850102773 0.07610976190171763 0.9904676999254391 1.9796048681715828
+  position 0.6886956873855528 -3.704908346516767 1.5675535580680457
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  size 30 30
+}
+Robot {
+  translation 0 0 1.1
+  rotation 0 -1 0 0
+  children [
+    DEF gps1 GPS {
+      translation 0 0 -0.6
+      children [
+        DEF gps1 Solid {
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps1"
+        }
+      ]
+      name "gps1"
+    }
+    DEF gps3 GPS {
+      translation 0.5 0 -0.6
+      children [
+        DEF gps3 Solid {
+          translation 0.5 0 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps3"
+        }
+      ]
+      name "gps3"
+    }
+    DEF gps4 GPS {
+      translation -0.5 0 -0.6
+      children [
+        DEF gps4 Solid {
+          translation 0.5 0 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps4"
+        }
+      ]
+      name "gps4"
+    }
+    DEF gps2 GPS {
+      translation 0 0 0.6
+      children [
+        DEF gps2 Solid {
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps1"
+        }
+      ]
+      name "gps2"
+    }
+    DEF hingejoint1 HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor 0.5 0 -0.6
+      }
+      device [
+        DEF motor1 RotationalMotor {
+          name "motor1"
+          maxTorque 15
+        }
+      ]
+      endPoint Solid {
+        translation 0.5 0 -0.6
+        rotation 0 0.9999999999999999 0 1.5706999999999998
+        children [
+          DEF wheel1 Shape {
+            appearance PBRAppearance {
+              baseColor 0.537255 0.713726 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.1
+              radius 0.5
+            }
+          }
+        ]
+        boundingObject USE wheel1
+        physics Physics {
+          mass 1
+        }
+      }
+    }
+    DEF hingejoint2 HingeJoint {
+      jointParameters HingeJointParameters {
+        anchor -0.5 0 -0.6
+      }
+      device [
+        DEF motor2 RotationalMotor {
+          name "motor2"
+          maxTorque 15
+        }
+      ]
+      endPoint Solid {
+        translation -0.5 0 -0.6
+        rotation -5.083527064379963e-05 -0.9999999974180737 5.079003528294587e-05 4.712018959189438
+        children [
+          DEF wheel2 Shape {
+            appearance PBRAppearance {
+              baseColor 0.537255 0.713726 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.1
+              radius 0.5
+            }
+          }
+        ]
+        name "solid(1)"
+        boundingObject USE wheel2
+        physics Physics {
+          mass 1
+        }
+      }
+    }
+    DEF body Shape {
+      appearance PBRAppearance {
+        baseColor 0.560784 0.545098 0.819608
+        roughness 0.2
+        metalness 0
+      }
+      geometry Box {
+        size 0.9 0.5 1.2
+      }
+    }
+  ]
+  boundingObject USE body
+  physics Physics {
+    mass 3
+  }
+  controller "fuzzycontroller"
+}
