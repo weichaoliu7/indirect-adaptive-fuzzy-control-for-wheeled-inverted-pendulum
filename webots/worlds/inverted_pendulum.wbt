@@ -8,18 +8,18 @@ WorldInfo {
   basicTimeStep 10
 }
 Viewpoint {
-  orientation -0.2562281628811186 0.21381177254560466 0.9426726125582907 1.808544237708832
-  position 2.072490457866656 -9.346104909786686 5.429450405961273
+  orientation 0.015398507235809182 0.01573179912738621 -0.9997576688733746 1.5494431066395695
+  position 0.7941438636863901 4.261555909012015 0.3955741158711065
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
 }
 Floor {
-  size 30 30
+  size 300 300
 }
 Robot {
-  translation 0 0 1.1
+  translation 0 0 1.2
   rotation 0 -1 0 0
   children [
     DEF gps1 GPS {
@@ -82,48 +82,6 @@ Robot {
       ]
       name "gps6"
     }
-    DEF gps3 GPS {
-      translation 0.5 0 -0.6
-      children [
-        DEF gps3 Solid {
-          translation 0.5 0 0
-          children [
-            Shape {
-              appearance PBRAppearance {
-                baseColor 1 0.333333 1
-                metalness 0
-              }
-              geometry Box {
-                size 0.005 0.005 0.005
-              }
-            }
-          ]
-          name "gps3"
-        }
-      ]
-      name "gps3"
-    }
-    DEF gps4 GPS {
-      translation -0.5 0 -0.6
-      children [
-        DEF gps4 Solid {
-          translation 0.5 0 0
-          children [
-            Shape {
-              appearance PBRAppearance {
-                baseColor 1 0.333333 1
-                metalness 0
-              }
-              geometry Box {
-                size 0.005 0.005 0.005
-              }
-            }
-          ]
-          name "gps4"
-        }
-      ]
-      name "gps4"
-    }
     DEF gps2 GPS {
       translation 0 0 0.6
       children [
@@ -146,17 +104,17 @@ Robot {
     }
     DEF hingejoint1 HingeJoint {
       jointParameters HingeJointParameters {
-        anchor 0.5 0 -0.6
+        anchor 0.5 0 -0.7
       }
       device [
         DEF motor1 RotationalMotor {
           name "motor1"
-          maxTorque 15
+          maxTorque 100
         }
       ]
       endPoint Solid {
-        translation 0.5 0 -0.6
-        rotation 0 0.9999999999999999 0 1.570699174759774
+        translation 0.5 0 -0.7
+        rotation 0 1 0 1.5706772783058502
         children [
           DEF wheel1 Shape {
             appearance PBRAppearance {
@@ -177,17 +135,17 @@ Robot {
     }
     DEF hingejoint2 HingeJoint {
       jointParameters HingeJointParameters {
-        anchor -0.5 0 -0.6
+        anchor -0.5 0 -0.7
       }
       device [
         DEF motor2 RotationalMotor {
           name "motor2"
-          maxTorque 15
+          maxTorque 100
         }
       ]
       endPoint Solid {
-        translation -0.5000002302869561 -2.5744384526087905e-05 -0.600008563111242
-        rotation -5.17035355915565e-05 -0.9999999973291022 5.1657915804994024e-05 4.712020251068217
+        translation -0.5 0 -0.7
+        rotation 0 1 0 1.571141640854182
         children [
           DEF wheel2 Shape {
             appearance PBRAppearance {
@@ -214,13 +172,13 @@ Robot {
         metalness 0
       }
       geometry Box {
-        size 0.9 0.5 1.2
+        size 0.9 0.5 2
       }
     }
   ]
   boundingObject USE body
   physics Physics {
-    mass 8
+    mass 10
   }
   controller "fuzzycontroller"
 }
