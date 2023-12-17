@@ -8,8 +8,8 @@ WorldInfo {
   basicTimeStep 10
 }
 Viewpoint {
-  orientation -0.11480870850102773 0.07610976190171763 0.9904676999254391 1.9796048681715828
-  position 0.6886956873855528 -3.704908346516767 1.5675535580680457
+  orientation -0.2562281628811186 0.21381177254560466 0.9426726125582907 1.808544237708832
+  position 2.072490457866656 -9.346104909786686 5.429450405961273
 }
 TexturedBackground {
 }
@@ -41,6 +41,46 @@ Robot {
         }
       ]
       name "gps1"
+    }
+    DEF gps5 GPS {
+      translation 0 -0.25 -0.6
+      children [
+        DEF gps5 Solid {
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps5"
+        }
+      ]
+      name "gps5"
+    }
+    DEF gps6 GPS {
+      translation 0 0.25 -0.6
+      children [
+        DEF gps6 Solid {
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 1 0.333333 1
+                metalness 0
+              }
+              geometry Box {
+                size 0.005 0.005 0.005
+              }
+            }
+          ]
+          name "gps6"
+        }
+      ]
+      name "gps6"
     }
     DEF gps3 GPS {
       translation 0.5 0 -0.6
@@ -116,7 +156,7 @@ Robot {
       ]
       endPoint Solid {
         translation 0.5 0 -0.6
-        rotation 0 0.9999999999999999 0 1.5706999999999998
+        rotation 0 0.9999999999999999 0 1.570699174759774
         children [
           DEF wheel1 Shape {
             appearance PBRAppearance {
@@ -131,7 +171,7 @@ Robot {
         ]
         boundingObject USE wheel1
         physics Physics {
-          mass 1
+          mass 2
         }
       }
     }
@@ -146,8 +186,8 @@ Robot {
         }
       ]
       endPoint Solid {
-        translation -0.5 0 -0.6
-        rotation -5.083527064379963e-05 -0.9999999974180737 5.079003528294587e-05 4.712018959189438
+        translation -0.5000002302869561 -2.5744384526087905e-05 -0.600008563111242
+        rotation -5.17035355915565e-05 -0.9999999973291022 5.1657915804994024e-05 4.712020251068217
         children [
           DEF wheel2 Shape {
             appearance PBRAppearance {
@@ -163,7 +203,7 @@ Robot {
         name "solid(1)"
         boundingObject USE wheel2
         physics Physics {
-          mass 1
+          mass 2
         }
       }
     }
@@ -180,7 +220,7 @@ Robot {
   ]
   boundingObject USE body
   physics Physics {
-    mass 3
+    mass 8
   }
   controller "fuzzycontroller"
 }

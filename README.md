@@ -1,0 +1,4 @@
+# indirect-adaptive-fuzzy-control-for-wheeled-inverted-pendulum
+The project replicates the study presented in [1], which investigates indirect adaptive fuzzy control of a class of wheeled inverted pendulum vehicle system. By utilizing virtual acceleration input of tilt angle subsystem and employing indirect adaptive fuzzy control, composite control of rotational and longitudinal subsystems is constructed. The paper achieves both velocity tracking and tilt angle stabilization, while this project only focuses on tilt angle stabilization.
+reference: 
+[1]Yue M, An C, Du Y, et al. Indirect adaptive fuzzy control for a nonholonomic/underactuated wheeled inverted pendulum vehicle based on a data-driven trajectory planner[J]. Fuzzy Sets and Systems, 2016, 290: 158-177.

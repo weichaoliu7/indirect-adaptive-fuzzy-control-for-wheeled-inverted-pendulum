@@ -20,10 +20,10 @@
 #define l 1.0                              // distance from the body center of gravity to the wheel axis
 static double t0 = 0.0;                    // start time
 static double t1 = 30.0;                   // end time
-static double R = 2.0;                     // radius of circular desired trajectory
+static double R = 5.0;                     // radius of circular desired trajectory
 static double Ts = 0.010;                  // sampling period
 static double rotational_velocity_d = 1.0; // desird rotational velocity of the vehicle
-static double rotational_angle_d = 0.010;  // desird rotational angle of the vehicle
+static double rotational_angle_d = 0.002;  // desird rotational angle of the vehicle
 
 /* reference: [1]Yue M, An C, Du Y, et al. Indirect adaptive fuzzy control for a nonholonomic/underactuated
 wheeled inverted pendulum vehicle based on a data-driven trajectory planner[J]. Fuzzy Sets and Systems, 2016, 290: 158-177. */
@@ -145,9 +145,9 @@ void PLANNER_init(){
     wb_gps_enable(gps3, TIME_STEP);
     WbDeviceTag gps4 = wb_robot_get_device("gps4");
     wb_gps_enable(gps4, TIME_STEP);
-    planner.lambda1 = 0.4;
-    planner.lambda2 = 0.4;
-    planner.lambda3 = 0.4;
+    planner.lambda1 = 0.5;
+    planner.lambda2 = 0.5;
+    planner.lambda3 = 0.5;
     system_state.x_coordinate = 0.0;
     system_state.y_coordinate = 0.0;
     system_state.rotational_angle = 0.0;
@@ -219,6 +219,18 @@ double PLANNER_realize(int i){
         planner.y_coordinate_d = sqrt(pow(R, 2) - pow(system_state.x_coordinate - R, 2));
     }
 
+    if (isnan(planner.y_coordinate_d)) {
+        if (system_state.y_coordinate < 0.0){
+            planner.y_coordinate_d = - sqrt(pow(R, 2) - pow(planner.x_coordinate_d - R, 2));
+        }
+        else if (system_state.y_coordinate >= 0.0){
+            planner.y_coordinate_d = sqrt(pow(R, 2) - pow(planner.x_coordinate_d - R, 2));
+        }
+    }
+
+    printf("x_coordinate_d: %f\n", planner.x_coordinate_d);
+    printf("y_coordinate_d: %f\n", planner.y_coordinate_d);
+
     // planner for the WIP vehicle
     planner.planner_u[0] = planner.x_coordinate_d;        // desired x-coordinate of midpoint of the vehicle
     planner.planner_u[1] = planner.y_coordinate_d;        // desired y-coordinate of midpoint of the vehicle
@@ -250,7 +262,8 @@ double PLANNER_realize(int i){
     // tracking error of rotational angle of the vehicle
     planner.tracking_error_rotational_angle = planner.error_rotational_angle;
 
-    planner.velocity_desired = rotational_velocity_d * R; // desired longitudinal velocity of the vehicle
+    // planner.velocity_desired = rotational_velocity_d * R; // desired longitudinal velocity of the vehicle
+    planner.velocity_desired = 2.0 ; // desired longitudinal velocity of the vehicle
 
     // planned longitudinal velocity of the vehicle
     planner.velocity_plan = planner.velocity_desired * cos(planner.tracking_error_rotational_angle) + planner.lambda3 * planner.tracking_error_x;
@@ -344,16 +357,16 @@ void CONTROLLER_init(){
     controller.controller_u[2] = system_state.rotational_velocity;
     controller.controller_u[3] = system_state.velocity;
     controller.controller_u[4] = system_state.tilt_angle;
-    controller.c = 2;       // parameter of sliding mode manifold
-    controller.k1 = 4;      // control gain
-    controller.k2 = 2;      // control gain
-    controller.k3 = 2;      // control gain
-    controller.k4 = 1.0;    // control gain
+    controller.c = 14.2;       // parameter of sliding mode manifold
+    controller.k1 = 20.3;      // control gain
+    controller.k2 = 23.3;      // control gain
+    controller.k3 = 0.19;      // control gain
+    controller.k4 = 2.61;    // control gain
     controller.gamma1 = 5; // controller parameter update gain
     controller.gamma2 = 1;  // controller parameter update gain
     controller.gamma3 = 5; // controller parameter update gain
     controller.gamma4 = 1;  // controller parameter update gain
-    controller.gamma5 = 100; // controller parameter update gain
+    controller.gamma5 = 5; // controller parameter update gain
     controller.gamma6 = 1;  // controller parameter update gain
 
     for (int j = 0; j < dimension; j++){
@@ -442,7 +455,21 @@ double CONTROLLER_realize(int i){
     controller.z1_coordinate = coordinate2[2]; // y-coordinate of midpoint of top of inverted pendulum
 
     // tilt angle of the vehicle body
-    system_state.tilt_angle = atan(sqrt(pow(controller.x1_coordinate - system_state.x_coordinate, 2) + pow(controller.y1_coordinate - system_state.y_coordinate, 2)) / (controller.z1_coordinate - controller.z_coordinate));
+    double tilt_angle = atan(sqrt(pow(controller.x1_coordinate - system_state.x_coordinate, 2) + pow(controller.y1_coordinate - system_state.y_coordinate, 2)) / (controller.z1_coordinate - controller.z_coordinate));
+
+    WbDeviceTag gps5 = wb_robot_get_device("gps5");
+    wb_gps_enable(gps5, TIME_STEP);
+    const double *coordinate5 = wb_gps_get_values(gps5);
+    WbDeviceTag gps6 = wb_robot_get_device("gps6");
+    wb_gps_enable(gps6, TIME_STEP);
+    const double *coordinate6 = wb_gps_get_values(gps6);
+
+    if (coordinate5[2] >= coordinate6[2]){
+        system_state.tilt_angle = tilt_angle;
+    } else{
+        system_state.tilt_angle = - tilt_angle;
+    }
+
     printf("tilt_angle: %f\n", system_state.tilt_angle);
     archive.tilt_angle_archive[i] = system_state.tilt_angle;
 
@@ -464,17 +491,17 @@ double CONTROLLER_realize(int i){
     controller.sliding = system_state.tilt_velocity + controller.c * system_state.tilt_angle; // sliding mode manifold
     printf("sliding_term: %f\n", controller.sliding);
 
-    controller.mu_tilt_angle.fx.negative_large = gaussian(system_state.tilt_angle, -PI / 6.0, PI / 24.0);  // membership function of f(x) of tilt angle is negative large
-    controller.mu_tilt_angle.fx.negative_small = gaussian(system_state.tilt_angle, -PI / 12.0, PI / 24.0); // membership function of f(x) of tilt angle is negative small
-    controller.mu_tilt_angle.fx.zero = gaussian(system_state.tilt_angle, 0.0, PI / 24.0);                  // membership function of f(x) of tilt angle is zero
-    controller.mu_tilt_angle.fx.positive_small = gaussian(system_state.tilt_angle, PI / 12.0, PI / 24.0);  // membership function of f(x) of tilt angle is positive small
-    controller.mu_tilt_angle.fx.positive_large = gaussian(system_state.tilt_angle, PI / 6.0, PI / 24.0);   // membership function of f(x) of tilt angle is positive large
+    controller.mu_tilt_angle.fx.negative_large = gaussian(system_state.tilt_angle, -PI / 30.0, PI / 120.0);  // membership function of f(x) of tilt angle is negative large
+    controller.mu_tilt_angle.fx.negative_small = gaussian(system_state.tilt_angle, -PI / 60.0, PI / 120.0); // membership function of f(x) of tilt angle is negative small
+    controller.mu_tilt_angle.fx.zero = gaussian(system_state.tilt_angle, 0.0, PI / 120.0);                  // membership function of f(x) of tilt angle is zero
+    controller.mu_tilt_angle.fx.positive_small = gaussian(system_state.tilt_angle, PI / 60.0, PI / 120.0);  // membership function of f(x) of tilt angle is positive small
+    controller.mu_tilt_angle.fx.positive_large = gaussian(system_state.tilt_angle, PI / 30.0, PI / 120.0);   // membership function of f(x) of tilt angle is positive large
 
-    controller.mu_tilt_angle.gx.negative_large = gaussian(system_state.tilt_angle, -PI / 6.0, PI / 24.0);  // membership function of g(x) of tilt angle is negative large
-    controller.mu_tilt_angle.gx.negative_small = gaussian(system_state.tilt_angle, -PI / 12.0, PI / 24.0); // membership function of g(x) of tilt angle is negative small
-    controller.mu_tilt_angle.gx.zero = gaussian(system_state.tilt_angle, 0.0, PI / 24.0);                  // membership function of g(x) of tilt angle is zero
-    controller.mu_tilt_angle.gx.positive_small = gaussian(system_state.tilt_angle, PI / 12.0, PI / 24.0);  // membership function of g(x) of tilt angle is positive small
-    controller.mu_tilt_angle.gx.positive_large = gaussian(system_state.tilt_angle, PI / 6.0, PI / 24.0);   // membership function of g(x) of tilt angle is positive large
+    controller.mu_tilt_angle.gx.negative_large = gaussian(system_state.tilt_angle, -PI / 30.0, PI / 120.0);  // membership function of g(x) of tilt angle is negative large
+    controller.mu_tilt_angle.gx.negative_small = gaussian(system_state.tilt_angle, -PI / 60.0, PI / 120.0); // membership function of g(x) of tilt angle is negative small
+    controller.mu_tilt_angle.gx.zero = gaussian(system_state.tilt_angle, 0.0, PI / 120.0);                  // membership function of g(x) of tilt angle is zero
+    controller.mu_tilt_angle.gx.positive_small = gaussian(system_state.tilt_angle, PI / 60.0, PI / 120.0);  // membership function of g(x) of tilt angle is positive small
+    controller.mu_tilt_angle.gx.positive_large = gaussian(system_state.tilt_angle, PI / 30.0, PI / 120.0);   // membership function of g(x) of tilt angle is positive large
 
     double* membership1_value[] = {
         &controller.mu_tilt_angle.fx.negative_large,
@@ -497,11 +524,11 @@ double CONTROLLER_realize(int i){
         }
     }
 
-    // printf("mu_tilt_angle_NB = %lf\n", controller.mu_tilt_angle.fx.negative_large);
-    // printf("mu_tilt_angle_NS = %lf\n", controller.mu_tilt_angle.fx.negative_small);
-    // printf("mu_tilt_angle_Z = %lf\n", controller.mu_tilt_angle.fx.zero);
-    // printf("mu_tilt_angle_PS = %lf\n", controller.mu_tilt_angle.fx.positive_small);
-    // printf("mu_tilt_angle_PB = %lf\n", controller.mu_tilt_angle.fx.positive_large);
+    printf("mu_tilt_angle_NB = %lf\n", controller.mu_tilt_angle.fx.negative_large);
+    printf("mu_tilt_angle_NS = %lf\n", controller.mu_tilt_angle.fx.negative_small);
+    printf("mu_tilt_angle_Z = %lf\n", controller.mu_tilt_angle.fx.zero);
+    printf("mu_tilt_angle_PS = %lf\n", controller.mu_tilt_angle.fx.positive_small);
+    printf("mu_tilt_angle_PB = %lf\n", controller.mu_tilt_angle.fx.positive_large);
 
     // calculate the numerator and denominator of fuzzy basis function xi of tilt angle
     controller.xi_denominator_tilt_angle = 0;
@@ -608,11 +635,11 @@ double CONTROLLER_realize(int i){
         }
     }
 
-    // printf("mu_velocity_NB = %lf\n", controller.mu_velocity.fx.negative_large);
-    // printf("mu_velocity_NS = %lf\n", controller.mu_velocity.fx.negative_small);
-    // printf("mu_velocity_Z = %lf\n", controller.mu_velocity.fx.zero);
-    // printf("mu_velocity_PS = %lf\n", controller.mu_velocity.fx.positive_small);
-    // printf("mu_velocity_PB = %lf\n", controller.mu_velocity.fx.positive_large);
+    printf("mu_velocity_NB = %lf\n", controller.mu_velocity.fx.negative_large);
+    printf("mu_velocity_NS = %lf\n", controller.mu_velocity.fx.negative_small);
+    printf("mu_velocity_Z = %lf\n", controller.mu_velocity.fx.zero);
+    printf("mu_velocity_PS = %lf\n", controller.mu_velocity.fx.positive_small);
+    printf("mu_velocity_PB = %lf\n", controller.mu_velocity.fx.positive_large);
 
     // calculate the numerator and denominator of fuzzy basis function xi of longitudinal velocity
     controller.xi_denominator_velocity = 0;
@@ -732,11 +759,11 @@ double CONTROLLER_realize(int i){
         }
     }
 
-    // printf("mu_rotational_velocity_NB = %lf\n", controller.mu_rotational_velocity.fx.negative_large);
-    // printf("mu_rotational_velocity_NS = %lf\n", controller.mu_rotational_velocity.fx.negative_small);
-    // printf("mu_rotational_velocity_Z = %lf\n", controller.mu_rotational_velocity.fx.zero);
-    // printf("mu_rotational_velocity_PS = %lf\n", controller.mu_rotational_velocity.fx.positive_small);
-    // printf("mu_rotational_velocity_PB = %lf\n", controller.mu_rotational_velocity.fx.positive_large);
+    printf("mu_rotational_velocity_NB = %lf\n", controller.mu_rotational_velocity.fx.negative_large);
+    printf("mu_rotational_velocity_NS = %lf\n", controller.mu_rotational_velocity.fx.negative_small);
+    printf("mu_rotational_velocity_Z = %lf\n", controller.mu_rotational_velocity.fx.zero);
+    printf("mu_rotational_velocity_PS = %lf\n", controller.mu_rotational_velocity.fx.positive_small);
+    printf("mu_rotational_velocity_PB = %lf\n", controller.mu_rotational_velocity.fx.positive_large);
 
     // calculate the numerator and denominator of fuzzy basis function xi of rotational velocity
     controller.xi_denominator_rotational_velocity = 0;
