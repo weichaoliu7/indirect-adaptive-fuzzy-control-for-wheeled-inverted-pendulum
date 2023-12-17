@@ -8,8 +8,6 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "sine.h"
-#include "cosine.h"
 
 // global variables declaration
 #define TIME_STEP 10
@@ -357,11 +355,11 @@ void CONTROLLER_init(){
     controller.controller_u[2] = system_state.rotational_velocity;
     controller.controller_u[3] = system_state.velocity;
     controller.controller_u[4] = system_state.tilt_angle;
-    controller.c = 14.2;       // parameter of sliding mode manifold
-    controller.k1 = 20.3;      // control gain
-    controller.k2 = 23.3;      // control gain
+    controller.c = 30;       // parameter of sliding mode manifold
+    controller.k1 = 35;      // control gain
+    controller.k2 = 45;      // control gain
     controller.k3 = 0.19;      // control gain
-    controller.k4 = 2.61;    // control gain
+    controller.k4 = 2.65;    // control gain
     controller.gamma1 = 5; // controller parameter update gain
     controller.gamma2 = 1;  // controller parameter update gain
     controller.gamma3 = 5; // controller parameter update gain
